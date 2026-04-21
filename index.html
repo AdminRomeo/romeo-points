@@ -1,22 +1,39 @@
-<script>
-async function main() {
-  try {
-    await liff.init({ liffId: "2009859817-80MaD7Mi" });
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Romeo Points</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+</head>
 
-    if (!liff.isLoggedIn()) {
-      liff.login();
-      return;
+<body style="text-align:center;font-family:sans-serif;">
+  <h2>Romeo Voyage</h2>
+  <p>แต้มสะสมของคุณ</p>
+
+  <h1 id="points">กำลังโหลด...</h1>
+
+  <script>
+    async function main() {
+      try {
+        await liff.init({ liffId: "2009859817-80MaD7Mi" });
+
+        if (!liff.isLoggedIn()) {
+          liff.login();
+          return;
+        }
+
+        const profile = await liff.getProfile();
+
+        document.getElementById("points").innerText =
+          "USER ID: " + profile.userId;
+
+      } catch (err) {
+        document.getElementById("points").innerText =
+          "ERROR: " + err.message;
+      }
     }
 
-    const profile = await liff.getProfile();
-    document.getElementById("points").innerText =
-      "USER ID: " + profile.userId;
-
-  } catch (err) {
-    document.getElementById("points").innerText =
-      "ERROR: " + err.message;
-  }
-}
-
-main();
-</script>
+    main();
+  </script>
+</body>
+</html>
