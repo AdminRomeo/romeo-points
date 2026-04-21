@@ -1,41 +1,27 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <title>Romeo Voyage</title>
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <title>Romeo Points</title>
 </head>
+<body>
+  <h1>กำลังโหลด...</h1>
 
-<body style="text-align:center;font-family:sans-serif;background:#f5f5f5;">
-  
-  <h2>Romeo Voyage</h2>
-  <p>แต้มสะสมของคุณ</p>
-
-  <h1 id="points">กำลังโหลด...</h1>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
   <script>
-    async function main() {
+    async function run() {
       await liff.init({ liffId: "2009859817-80MaD7Mi" });
 
       if (!liff.isLoggedIn()) {
         liff.login();
+        return;
       }
 
       const profile = await liff.getProfile();
-      const userId = profile.userId;
-
-      const res = await fetch("https://script.google.com/macros/s/AKfycbyRUjTvf3rczc1J8ZC1DMkAVdE6RMC-8qfNJkvI1gEB91gRCQVq4KlDd3VSNc1agELk/exec?userId=" + userId);
-      const data = await res.json();
-
-      if (data.error) {
-        document.getElementById("points").innerHTML = "ไม่พบข้อมูล";
-      } else {
-        document.getElementById("points").innerHTML = data.points + " แต้ม";
-      }
+      document.body.innerHTML = "USER ID: " + profile.userId;
     }
 
-    main();
+    run();
   </script>
-
 </body>
 </html>
