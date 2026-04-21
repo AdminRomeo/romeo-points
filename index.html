@@ -1,73 +1,46 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Romeo Points</title>
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-</head>
+function doPost(e) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Sheet1");
+  const data = JSON.parse(e.postData.contents);
 
-<body style="text-align:center;font-family:sans-serif;">
+  const userId = data.userId;
+  const name = data.name;
 
-<h2>Romeo Voyage</h2>
+  const rows = sheet.getDataRange().getValues();
 
-<p id="name">กำลังโหลดชื่อ...</p>
-<p id="userId"></p>
-<h1 id="points">0 คะแนน</h1>
+  let found = false;
+  let points = 0;
 
-<button onclick="addPoint()" style="padding:10px 20px;font-size:18px;">
-สะสมแต้ม
-</button>
+  for (let i = 1; i < rows.length; i++) {
 
-<script>
-let userId = "";
-let displayName = "";
+    // 👉 คอลัมน์ E = index 4 (LINE User ID)
+    if (rows[i][4] === userId) {
+      found = true;
 
-async function main() {
-  await liff.init({ liffId: "2009859930-oDRZGvUc" });
-
-  if (!liff.isLoggedIn()) {
-    liff.login();
+      // 👉 คอลัมน์ G = index 6 (แต้ม)
+      if (data.action === "add") {
+        points = rows[i][6] + 1;
+        sheet.getRange(i+1, 7).setValue(points);
+      } else {
+        points = rows[i][6];
+      }
+    }
   }
 
-  const profile = await liff.getProfile();
-  userId = profile.userId;
-  displayName = profile.displayName;
+  if (!found) {
+    points = 1;
 
-  document.getElementById("name").innerText = "ชื่อ: " + displayName;
-  document.getElementById("userId").innerText = "ID: " + userId;
+    // 👉 ใส่ข้อมูลลงตำแหน่งที่ถูก
+    sheet.appendRow([
+      "",        // Member ID
+      "",        // ลำดับ
+      name,      // ชื่อ (C)
+      "",        // เบอร์
+      userId,    // LINE User ID (E)
+      "",        // ทริป
+      points     // แต้ม (G)
+    ]);
+  }
 
-  loadPoints();
+  return ContentService.createTextOutput(JSON.stringify({ points }))
+    .setMimeType(ContentService.MimeType.JSON);
 }
-
-async function loadPoints() {
-  const res = await fetch("👉 ใส่ URL Apps Script", {
-    method: "POST",
-    body: JSON.stringify({
-      action: "get",
-      userId: userId
-    })
-  });
-
-  const data = await res.json();
-  document.getElementById("points").innerText = data.points + " คะแนน";
-}
-
-async function addPoint() {
-  const res = await fetch("👉 ใส่ URL Apps Script", {
-    method: "POST",
-    body: JSON.stringify({
-      action: "add",
-      userId: userId,
-      name: displayName
-    })
-  });
-
-  const data = await res.json();
-  document.getElementById("points").innerText = data.points + " คะแนน";
-}
-
-main();
-</script>
-
-</body>
-</html>
