@@ -1,46 +1,65 @@
-function doPost(e) {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Sheet1");
-  const data = JSON.parse(e.postData.contents);
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+</head>
+<body>
 
-  const userId = data.userId;
-  const name = data.name;
+<h2 id="name">กำลังโหลด...</h2>
+<h3 id="points">แต้ม: 0</h3>
 
-  const rows = sheet.getDataRange().getValues();
+<button onclick="addPoint()">สะสมแต้ม</button>
 
-  let found = false;
-  let points = 0;
+<script>
+let userId = "";
+let displayName = "";
 
-  for (let i = 1; i < rows.length; i++) {
+// 👉 ใส่ค่าที่แก้แล้วตรงนี้
+const LIFF_ID = "2009859930-oDRZGvUc";
+const API_URL = "https://script.google.com/macros/s/AKfycbyRUjTvf3rczc1J8ZC1DMkAVdE6RMC-8qfNJkvI1gEB91gRCQVq4KlDd3VSNc1agELk/exec";
 
-    // 👉 คอลัมน์ E = index 4 (LINE User ID)
-    if (rows[i][4] === userId) {
-      found = true;
+async function main() {
+  await liff.init({ liffId: LIFF_ID });
 
-      // 👉 คอลัมน์ G = index 6 (แต้ม)
-      if (data.action === "add") {
-        points = rows[i][6] + 1;
-        sheet.getRange(i+1, 7).setValue(points);
-      } else {
-        points = rows[i][6];
-      }
-    }
-  }
+  const profile = await liff.getProfile();
+  userId = profile.userId;
+  displayName = profile.displayName;
 
-  if (!found) {
-    points = 1;
+  document.getElementById("name").innerText = displayName;
 
-    // 👉 ใส่ข้อมูลลงตำแหน่งที่ถูก
-    sheet.appendRow([
-      "",        // Member ID
-      "",        // ลำดับ
-      name,      // ชื่อ (C)
-      "",        // เบอร์
-      userId,    // LINE User ID (E)
-      "",        // ทริป
-      points     // แต้ม (G)
-    ]);
-  }
-
-  return ContentService.createTextOutput(JSON.stringify({ points }))
-    .setMimeType(ContentService.MimeType.JSON);
+  loadPoints();
 }
+
+async function loadPoints() {
+  const res = await fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "get",
+      userId: userId
+    })
+  });
+
+  const data = await res.json();
+  document.getElementById("points").innerText = "แต้ม: " + (data.points || 0);
+}
+
+async function addPoint() {
+  const res = await fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "add",
+      userId: userId,
+      name: displayName
+    })
+  });
+
+  const data = await res.json();
+  document.getElementById("points").innerText = "แต้ม: " + (data.points || 0);
+}
+
+main();
+</script>
+
+</body>
+</html>
