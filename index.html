@@ -7,33 +7,67 @@
 </head>
 
 <body style="text-align:center;font-family:sans-serif;">
-  <h2>Romeo Voyage</h2>
-  <p>แต้มสะสมของคุณ</p>
 
-  <h1 id="points">กำลังโหลด...</h1>
+<h2>Romeo Voyage</h2>
 
-  <script>
-    async function main() {
-      try {
-        await liff.init({ liffId: "2009859930-oDRZGvUc" });
+<p id="name">กำลังโหลดชื่อ...</p>
+<p id="userId"></p>
+<h1 id="points">0 คะแนน</h1>
 
-        if (!liff.isLoggedIn()) {
-          liff.login();
-          return;
-        }
+<button onclick="addPoint()" style="padding:10px 20px;font-size:18px;">
+สะสมแต้ม
+</button>
 
-        const profile = await liff.getProfile();
+<script>
+let userId = "";
+let displayName = "";
 
-        document.getElementById("points").innerText =
-          "USER ID: " + profile.userId;
+async function main() {
+  await liff.init({ liffId: "2009859930-oDRZGvUc" });
 
-      } catch (err) {
-        document.getElementById("points").innerText =
-          "ERROR: " + err.message;
-      }
-    }
+  if (!liff.isLoggedIn()) {
+    liff.login();
+  }
 
-    main();
-  </script>
+  const profile = await liff.getProfile();
+  userId = profile.userId;
+  displayName = profile.displayName;
+
+  document.getElementById("name").innerText = "ชื่อ: " + displayName;
+  document.getElementById("userId").innerText = "ID: " + userId;
+
+  loadPoints();
+}
+
+async function loadPoints() {
+  const res = await fetch("👉 ใส่ URL Apps Script", {
+    method: "POST",
+    body: JSON.stringify({
+      action: "get",
+      userId: userId
+    })
+  });
+
+  const data = await res.json();
+  document.getElementById("points").innerText = data.points + " คะแนน";
+}
+
+async function addPoint() {
+  const res = await fetch("👉 ใส่ URL Apps Script", {
+    method: "POST",
+    body: JSON.stringify({
+      action: "add",
+      userId: userId,
+      name: displayName
+    })
+  });
+
+  const data = await res.json();
+  document.getElementById("points").innerText = data.points + " คะแนน";
+}
+
+main();
+</script>
+
 </body>
 </html>
